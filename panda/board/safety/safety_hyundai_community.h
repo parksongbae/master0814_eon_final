@@ -146,11 +146,11 @@ static int hyundai_community_rx_hook(CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
-  bool is_mdps12_msg = addr == 593;
-  bool is_lkas11_msg = addr == 832;
-  bool is_scc11_msg = addr == 1056;
-  bool is_scc12_msg = addr == 1057;
-  bool is_clu11_msg = addr == 1265;
+  bool is_mdps12_msg = (addr == 593);
+  bool is_lkas11_msg = (addr == 832);
+  bool is_scc11_msg = (addr == 1056);
+  bool is_scc12_msg = (addr == 1057);
+  bool is_clu11_msg = (addr == 1265);
 
   if (!valid) {
     print("  CAN RX invalid addr : ["); puth(addr); print("]\n");
@@ -280,11 +280,11 @@ static int hyundai_community_tx_hook(CANPacket_t *to_send) {
   int addr = GET_ADDR(to_send);
   int bus = GET_BUS(to_send);
 
-  bool is_mdps12_msg = addr == 593;
-  bool is_ems11_msg = addr == 790;
-  bool is_lkas11_msg = addr == 832;
-  bool is_scc12_msg = addr == 1057;
-  bool is_clu11_msg = addr == 1265;
+  bool is_mdps12_msg = (addr == 593);
+  bool is_ems11_msg = (addr == 790);
+  bool is_lkas11_msg = (addr == 832);
+  bool is_scc12_msg = (addr == 1057);
+  bool is_clu11_msg = (addr == 1265);
 
   if (!msg_allowed(to_send, HYUNDAI_COMMUNITY_TX_MSGS, sizeof(HYUNDAI_COMMUNITY_TX_MSGS) / sizeof(HYUNDAI_COMMUNITY_TX_MSGS[0]))) {
     tx = 0;
@@ -314,7 +314,6 @@ static int hyundai_community_tx_hook(CANPacket_t *to_send) {
 
     violation |= longitudinal_accel_checks(desired_accel_raw, HYUNDAI_COMMUNITY_LONG_LIMITS);
     violation |= longitudinal_accel_checks(desired_accel_val, HYUNDAI_COMMUNITY_LONG_LIMITS);
-
     violation |= (aeb_decel_cmd != 0);
     violation |= (aeb_req != 0);
 
@@ -324,7 +323,8 @@ static int hyundai_community_tx_hook(CANPacket_t *to_send) {
   }
 
   // LKA STEER: safety check
-  /*if (is_lkas11_msg) {
+  if (is_lkas11_msg) {
+    lkas11_op = 20;
     int desired_torque = ((GET_BYTES_04(to_send) >> 16) & 0x7ffU) - 1024U;
     bool steer_req = GET_BIT(to_send, 27U) != 0U;
 
@@ -332,9 +332,9 @@ static int hyundai_community_tx_hook(CANPacket_t *to_send) {
     if (steer_torque_cmd_checks(desired_torque, steer_req, limits)) {
       tx = 0;
     }
-  }*/
+  }
 
-  if (is_lkas11_msg) {
+  /*if (is_lkas11_msg) {
     lkas11_op = 20;
     int desired_torque = ((GET_BYTES_04(to_send) >> 16) & 0x7ffU) - 1024U;
     uint32_t ts = microsecond_timer_get();
@@ -388,7 +388,7 @@ static int hyundai_community_tx_hook(CANPacket_t *to_send) {
     if (violation) {
       tx = 0;
     }
-  }
+  }*/
 
   // UDS: Only tester present ("\x02\x3E\x80\x00\x00\x00\x00\x00") allowed on diagnostics address
   /*if (addr == 2000) {
@@ -398,7 +398,7 @@ static int hyundai_community_tx_hook(CANPacket_t *to_send) {
   }*/
 
   // BUTTONS: used for resume spamming and cruise cancellation
-  if (is_clu11_msg && !controls_allowed && (bus != eps_bus) && (eps_bus == 1)) {
+  /*if (is_clu11_msg && !hyundai_longitudinal) {
     int button = GET_BYTE(to_send, 0) & 0x7U;
 
     bool allowed_resume = (button == 1) && controls_allowed;
@@ -407,7 +407,7 @@ static int hyundai_community_tx_hook(CANPacket_t *to_send) {
     if (!(allowed_resume || allowed_set_decel || allowed_cancel)) {
       tx = 0;
     }
-  }
+  }*/
 
   if (is_mdps12_msg) { mdps12_op = 20; }
   if (is_ems11_msg) { ems11_op = 20; }
@@ -423,12 +423,12 @@ static int hyundai_community_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
   int fwd_to_bus1 = -1;
   if (fwd_bus1) { fwd_to_bus1 = 1; }
 
-  bool is_mdps12_msg = addr == 593;
-  bool is_ems11_msg = addr == 790;
-  bool is_lkas11_msg = addr == 832;
-  bool is_lfahda_msg = addr == 1157;
-  bool is_clu11_msg = addr == 1265;
-  bool is_scc_msg = addr == 905 || addr == 1056 || addr == 1057 || addr == 1290;
+  bool is_mdps12_msg = (addr == 593);
+  bool is_ems11_msg = (addr == 790);
+  bool is_lkas11_msg = (addr == 832);
+  bool is_lfahda_msg = (addr == 1157);
+  bool is_clu11_msg = (addr == 1265);
+  bool is_scc_msg = (addr == 905) || (addr == 1056) || (addr == 1057) || (addr == 1290);
 
   // forward LKAS to CCAN
   if (fwd_bus2) {
