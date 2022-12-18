@@ -1,4 +1,4 @@
-add Tucson_TL 2019 2.0 diesel (LKAS, EPB, ASCC, HDA1, BSD)
+add Tucson_TL
 
 crwusiz openpilot
 =====
